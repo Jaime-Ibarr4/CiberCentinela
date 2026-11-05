@@ -1,0 +1,29 @@
+# Entornos virtuales y Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Variables de entorno y credenciales sensibles (SEGURIDAD)
+.env
+.env.local
+*.pem
+*.key
+
+# Archivos de registros y logs
+*.log
+centinelad.log
+
+# Almacenamiento local de forense y respaldos generados
+var/backups/
+srv/forensics/cases/
+var/
+srv/
+
+# Archivos de sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

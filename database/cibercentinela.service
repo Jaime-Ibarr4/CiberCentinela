@@ -1,0 +1,16 @@
+[Unit]
+Description=CiberCentinela Security & Digital Forensics Daemon (centinelad)
+After=network.target mysql.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/cibercentinela
+EnvironmentFile=/opt/cibercentinela/.env
+ExecStart=/usr/bin/python3 /opt/cibercentinela/centinelad.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
