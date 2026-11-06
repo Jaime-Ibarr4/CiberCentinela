@@ -244,10 +244,10 @@ class CentinelaDaemon:
         mysqldump_exe = Path(settings.MYSQLDUMP_BIN)
         cmd = [
             str(mysqldump_exe) if mysqldump_exe.exists() else "mysqldump",
-            f"-h{settings.DB_HOST}",
-            f"-P{settings.DB_PORT}",
-            f"-u{settings.DB_BACKUP_USER}",
-            f"-p{settings.DB_BACKUP_PASS}",
+            f"--host={settings.DB_HOST}",
+            f"--port={settings.DB_PORT}",
+            f"--user={settings.DB_BACKUP_USER}",
+            f"--password={settings.DB_BACKUP_PASS}",
             "--single-transaction",
             "--quick",
             "--routines",

@@ -1023,7 +1023,8 @@ def api_simulate_telegram_command(data: TelegramCommandInput, user: Dict[str, An
     """Permite ejecutar y verificar comandos del bot de Telegram desde la consola web."""
     cmd = data.command.strip()
     res = bot_instance.execute_command(cmd, chat_id=data.chat_id or settings.TELEGRAM_CHAT_ID, sender_name=user['nombre_completo'])
-    daemon.log_event("INFO", "telegram-bot.cmd", f"Comando {cmd} ejecutado por {user['email']} -> {res.get('authorized')}")
+    if res.get("response"):
+        bot_instance.send_message_api(res["response"])  # <-- ¡Se envía a tu Telegram!    daemon.log_event("INFO", "telegram-bot.cmd", f"Comando {cmd} ejecutado por {user['email']} -> {res.get('authorized')}")
     return res
 
 
