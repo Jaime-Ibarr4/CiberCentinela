@@ -37,6 +37,8 @@ from backend.forensics import (
     analyze_email_headers_forensic,
 )
 from backend.daemon_worker import daemon
+from backend.kpi_monitor import collect_all_system_kpis, format_telegram_kpi_report
+from backend.telegram_bot import bot_instance
 from database.setup_db import setup_mysql_database
 
 app = FastAPI(
@@ -65,6 +67,7 @@ def on_startup():
     except Exception as e:
         print(f"[!] Advertencia inicializando MySQL: {e}")
     daemon.start()
+    bot_instance.start_polling()
 
 
 # ============================================================================
@@ -157,6 +160,16 @@ class TelegramConfigInput(BaseModel):
     chat_id: Optional[str] = ""
     simulation_mode: bool = True
     auto_dispatch: bool = False
+
+
+class TelegramCommandInput(BaseModel):
+    command: str
+    chat_id: Optional[str] = ""
+
+
+class SendKPIReportInput(BaseModel):
+    target_chat_id: Optional[str] = ""
+    bot_token: Optional[str] = ""
 
 
 # ============================================================================
@@ -973,6 +986,47 @@ def api_update_telegram_config(data: TelegramConfigInput, user: Dict[str, Any] =
     return {"message": "Configuración del servicio de alertas Telegram actualizada."}
 
 
+@app.get("/api/kpis/system")
+def api_get_system_kpis(user: Dict[str, Any] = Depends(get_current_user)):
+    """Retorna los 7 KPIs del servidor para la evaluación de ASO."""
+    return collect_all_system_kpis()
+
+
+@app.post("/api/kpis/send-telegram-report")
+def api_send_telegram_kpi_report(data: Optional[SendKPIReportInput] = None, user: Dict[str, Any] = Depends(get_current_user)):
+    """Envía el reporte de 7 KPIs al número/Chat ID asignado mediante la API oficial de Telegram o Sandbox."""
+    target_id = (data.target_chat_id.strip() if data and data.target_chat_id else settings.TELEGRAM_CHAT_ID).strip()
+    token = (data.bot_token.strip() if data and data.bot_token else settings.TELEGRAM_BOT_TOKEN).strip()
+
+    result = bot_instance.send_kpi_report(chat_id=target_id, token=token)
+    report_text = format_telegram_kpi_report()
+
+    daemon.log_event(
+        "ALERT" if result.get("success") else "WARN",
+        "telegram-kpi.worker",
+        f"Reporte de 7 KPIs enviado a Telegram [{target_id or 'Configurado'}]: {result['detail']} por {user['email']}."
+    )
+
+    return {
+        "status": "sent" if result.get("success") and not result.get("simulated") else "simulated" if result.get("simulated") else "error",
+        "success": result.get("success", False),
+        "detail": result.get("detail", ""),
+        "target_chat_id": target_id or "Configuración por Defecto",
+        "report": report_text,
+        "mode": result.get("mode", "SIMULATION_LOCAL"),
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+
+@app.post("/api/telegram/simulate-command")
+def api_simulate_telegram_command(data: TelegramCommandInput, user: Dict[str, Any] = Depends(get_current_user)):
+    """Permite ejecutar y verificar comandos del bot de Telegram desde la consola web."""
+    cmd = data.command.strip()
+    res = bot_instance.execute_command(cmd, chat_id=data.chat_id or settings.TELEGRAM_CHAT_ID, sender_name=user['nombre_completo'])
+    daemon.log_event("INFO", "telegram-bot.cmd", f"Comando {cmd} ejecutado por {user['email']} -> {res.get('authorized')}")
+    return res
+
+
 # ============================================================================
 # MÓDULO 5: ADMINISTRACIÓN DEL SERVIDOR, DEMONIO Y COPIAS DE SEGURIDAD
 # ============================================================================
@@ -1008,6 +1062,8 @@ def api_daemon_telemetry(user: Dict[str, Any] = Depends(get_current_user)):
 
     return {
         "daemon": daemon.get_status(),
+        "system_kpis": collect_all_system_kpis(),
+        "bot_history": bot_instance.command_history[:15],
         "mysql": {
             "version": mysql_ver,
             "database": settings.DB_NAME,

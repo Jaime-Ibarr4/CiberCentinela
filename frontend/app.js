@@ -46,6 +46,139 @@ async function apiFetch(path, options = {}) {
 }
 
 // ============================================================================
+// ============================================================================
+// COMPONENTE DE SELECT PERSONALIZADO (CERO COMPONENTES NATIVOS DEL NAVEGADOR)
+// ============================================================================
+function initCustomSelects() {
+  document.querySelectorAll("select.input-control").forEach((sel) => {
+    setupCustomSelect(sel);
+  });
+}
+
+function setupCustomSelect(selectEl) {
+  if (!selectEl) return;
+  if (selectEl.dataset.customized === "true") {
+    syncCustomSelect(selectEl);
+    return;
+  }
+  selectEl.dataset.customized = "true";
+  selectEl.classList.add("has-custom-select");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "custom-select-wrapper";
+  if (selectEl.id) wrapper.dataset.for = selectEl.id;
+
+  const trigger = document.createElement("div");
+  trigger.className = "custom-select-trigger";
+  trigger.tabIndex = 0;
+
+  const label = document.createElement("span");
+  label.className = "custom-select-label";
+
+  const arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  arrow.setAttribute("class", "custom-select-arrow");
+  arrow.setAttribute("viewBox", "0 0 16 16");
+  arrow.setAttribute("fill", "none");
+  arrow.innerHTML = `<path d="m2 5 6 6 6-6" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+  trigger.appendChild(label);
+  trigger.appendChild(arrow);
+
+  const menu = document.createElement("div");
+  menu.className = "custom-select-menu";
+
+  wrapper.appendChild(trigger);
+  wrapper.appendChild(menu);
+
+  // Insertar el contenedor personalizado justo después del select nativo
+  if (selectEl.nextSibling) {
+    selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
+  } else {
+    selectEl.parentNode.appendChild(wrapper);
+  }
+
+  function renderOptions() {
+    menu.innerHTML = "";
+    const options = Array.from(selectEl.options);
+    let selectedText = "";
+
+    options.forEach((opt) => {
+      const item = document.createElement("div");
+      item.className = "custom-select-option";
+      item.textContent = opt.textContent;
+      item.dataset.value = opt.value;
+
+      if (opt.selected || opt.value === selectEl.value) {
+        item.classList.add("selected");
+        selectedText = opt.textContent;
+      }
+
+      item.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selectEl.value = opt.value;
+        label.textContent = opt.textContent;
+        menu.querySelectorAll(".custom-select-option").forEach((o) => o.classList.remove("selected"));
+        item.classList.add("selected");
+        wrapper.classList.remove("open");
+        selectEl.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+
+      menu.appendChild(item);
+    });
+
+    if (selectedText) {
+      label.textContent = selectedText;
+    } else if (options.length > 0) {
+      label.textContent = options[0].textContent;
+    } else {
+      label.textContent = "-- Seleccionar --";
+    }
+  }
+
+  renderOptions();
+
+  // Abrir / Cerrar dropdown
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const wasOpen = wrapper.classList.contains("open");
+    document.querySelectorAll(".custom-select-wrapper.open").forEach((w) => w.classList.remove("open"));
+    if (!wasOpen) wrapper.classList.add("open");
+  });
+
+  trigger.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      trigger.click();
+    } else if (e.key === "Escape") {
+      wrapper.classList.remove("open");
+    }
+  });
+
+  selectEl._customSync = renderOptions;
+  selectEl.addEventListener("change", () => {
+    renderOptions();
+  });
+
+  // Observador de mutación para cuando JS agrega options al select nativo
+  const observer = new MutationObserver(() => {
+    renderOptions();
+  });
+  observer.observe(selectEl, { childList: true, subtree: true, attributes: true });
+}
+
+function syncCustomSelect(selectEl) {
+  if (selectEl && typeof selectEl._customSync === "function") {
+    selectEl._customSync();
+  }
+}
+
+// Cerrar cualquier select al hacer clic fuera
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".custom-select-wrapper")) {
+    document.querySelectorAll(".custom-select-wrapper.open").forEach((w) => w.classList.remove("open"));
+  }
+});
+
 // AUTENTICACIÓN Y CAMBIO RÁPIDO DE PERFIL RBAC
 // ============================================================================
 function fillDemoLogin(email, password, autoSubmit = false) {
@@ -138,6 +271,7 @@ async function quickSwitchUser(email, password) {
     updateTopUserBar();
     showToast(`Cambiado a perfil: ${CURRENT_USER.nombre_completo} (${CURRENT_USER.mysql_service_user})`);
     await refreshAllActiveData();
+  initCustomSelects();
   } catch (err) {
     showToast(err.message, true);
   }
@@ -169,6 +303,7 @@ async function enterConsole() {
   updateTopUserBar();
   await loadCatalogs();
   await refreshAllActiveData();
+  initCustomSelects();
   if (POLL_TIMER) clearInterval(POLL_TIMER);
   POLL_TIMER = setInterval(() => {
     loadTelemetry(true);
@@ -252,6 +387,49 @@ async function loadTelemetry(silent = false) {
     document.getElementById("badge-telegram-count").textContent = k.telegram_pendientes;
 
     document.getElementById("mysql-version-badge").textContent = `MySQL ${data.mysql.version} · ${data.mysql.triggers_count} Triggers`;
+
+    // Renderizar KPIs del Sistema Operativo Linux (Rúbrica ASO)
+    if (data.system_kpis) {
+      const s = data.system_kpis;
+      if (document.getElementById("system-os-badge")) {
+        document.getElementById("system-os-badge").textContent = `${s.platform} · ${s.hostname}`;
+      }
+      if (document.getElementById("kpi-cpu-val")) {
+        const cpuEl = document.getElementById("kpi-cpu-val");
+        cpuEl.textContent = `${s.kpi1_cpu.cpu_percent}%`;
+        cpuEl.style.color = s.kpi1_cpu.is_spike ? "#EF4444" : "#4ADE80";
+        document.getElementById("kpi-cpu-load").textContent = `${s.kpi1_cpu.load_average['1min']} / ${s.kpi1_cpu.load_average['5min']} / ${s.kpi1_cpu.load_average['15min']}`;
+      }
+      if (document.getElementById("kpi-ram-val")) {
+        const ramEl = document.getElementById("kpi-ram-val");
+        ramEl.textContent = `${s.kpi2_ram.ram_percent}%`;
+        ramEl.style.color = s.kpi2_ram.is_critical ? "#EF4444" : "#38BDF8";
+        document.getElementById("kpi-ram-used").textContent = `${s.kpi2_ram.ram_available_gb} GB`;
+        document.getElementById("kpi-ram-total").textContent = `${s.kpi2_ram.ram_total_gb} GB`;
+      }
+      if (document.getElementById("kpi-disk-val")) {
+        document.getElementById("kpi-disk-val").textContent = `${s.kpi3_disk.overall_percent}%`;
+        const p0 = s.kpi3_disk.partitions[0];
+        document.getElementById("kpi-disk-sub").textContent = p0 ? `${p0.free_gb} GB libres de ${p0.total_gb} GB` : "Partición lista";
+      }
+      if (document.getElementById("kpi-uptime-val")) {
+        document.getElementById("kpi-uptime-val").textContent = s.kpi5_uptime.uptime_human;
+        document.getElementById("kpi-boot-time").textContent = s.kpi5_uptime.boot_time;
+      }
+      if (document.getElementById("kpi-net-val")) {
+        document.getElementById("kpi-net-val").textContent = s.kpi6_network.total_connections;
+        document.getElementById("kpi-net-estab").textContent = s.kpi6_network.status_breakdown.ESTABLISHED || 0;
+        document.getElementById("kpi-net-listen").textContent = s.kpi6_network.status_breakdown.LISTEN || 0;
+      }
+      if (document.getElementById("services-badges-list") && s.kpi4_services && s.kpi4_services.services) {
+        document.getElementById("services-badges-list").innerHTML = s.kpi4_services.services.map(srv => `
+          <span class="badge ${srv.is_ok ? 'badge-ok' : 'badge-critica'}">
+            <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:${srv.is_ok ? '#22C55E' : '#EF4444'}; margin-right:4px;"></span>
+            ${escapeHtml(srv.name)}: ${escapeHtml(srv.status)}
+          </span>
+        `).join('');
+      }
+    }
 
     // Renderizar consola journalctl
     const term = document.getElementById("daemon-log-terminal");
@@ -357,6 +535,7 @@ async function loadIncidents() {
 function openNewIncidentModal() {
   document.getElementById("form-new-incident").reset();
   document.getElementById("modal-new-incident").classList.remove("hidden");
+  initCustomSelects();
 }
 
 function closeModal(id) {
@@ -384,6 +563,7 @@ async function handleCreateIncident(ev) {
     closeModal("modal-new-incident");
     showToast(res.message + (res.critical_queued ? " [Alerta Crítica encolada en Telegram]" : ""));
     await refreshAllActiveData();
+  initCustomSelects();
   } catch (err) {
     showToast(err.message, true);
   }
@@ -499,6 +679,7 @@ async function openIncidentDetail(id_incidente) {
     `;
 
     document.getElementById("modal-incident-detail").classList.remove("hidden");
+    initCustomSelects();
   } catch (err) {
     showToast(err.message, true);
   }
@@ -524,6 +705,7 @@ async function handleUpdateIncident(ev, id_incidente) {
     showToast(res.message);
     await openIncidentDetail(id_incidente);
     await refreshAllActiveData();
+  initCustomSelects();
   } catch (err) {
     showToast(err.message, true);
   }
@@ -537,6 +719,7 @@ async function restoreIncidentVersion(id_incidente, id_historico) {
     showToast(res.message);
     await openIncidentDetail(id_incidente);
     await refreshAllActiveData();
+  initCustomSelects();
   } catch (err) {
     showToast(err.message, true);
   }
@@ -780,6 +963,10 @@ async function loadTelegramQueue() {
     const tbody = document.getElementById("tbody-telegram-queue");
 
     document.getElementById("tg-chat-id").value = data.config.chat_id || "";
+    const kpiDestInput = document.getElementById("kpi-target-chat-id");
+    if (kpiDestInput && !kpiDestInput.value && data.config.chat_id) {
+      kpiDestInput.value = data.config.chat_id;
+    }
     document.getElementById("tg-sim-mode").checked = data.config.simulation_mode;
     document.getElementById("tg-auto-dispatch").checked = data.config.auto_dispatch;
     document.getElementById("telegram-mode-badge").textContent = data.config.simulation_mode
@@ -996,6 +1183,7 @@ async function handleCreateUser(ev) {
 // Inicialización automática robusta si ya existe sesión activa
 function initApp() {
   try {
+    initCustomSelects();
     loadSamplePhishingHeaders("malicious");
   } catch (e) {
     console.warn("Aviso al precargar muestras de cabeceras:", e);
@@ -1016,4 +1204,57 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initApp);
 } else {
   initApp();
+}
+// ============================================================================
+// FUNCIONES DE AUTOMATIZACIÓN DE KPIS Y BOT DE TELEGRAM (RÚBRICA ASO)
+// ============================================================================
+async function sendTelegramKPIReportNow() {
+  try {
+    showToast("Transmitiendo reporte de 7 KPIs a Telegram...");
+    const res = await apiFetch("/api/kpis/send-telegram-report", { method: "POST" });
+    if (res.status === "sent") {
+      showToast("✓ Reporte de KPIs entregado a Telegram vía TLS oficial.");
+    } else {
+      showToast("✓ Reporte generado y registrado en bitácora (Modo Sandbox).");
+    }
+    const term = document.getElementById("tg-bot-terminal");
+    if (term) {
+      term.innerHTML = `<span style="color:#38BDF8;">[${res.timestamp}] TRANSMISIÓN DE REPORTE COMPLETO DE KPIS (${res.mode}):</span>\n\n` + escapeHtml(res.report) + "\n\n" + term.innerHTML;
+    }
+    await loadTelemetry(true);
+  } catch (err) {
+    showToast("Error al transmitir reporte: " + err.message, true);
+  }
+}
+
+async function runSimulatedTgCmd(command) {
+  try {
+    const input = document.getElementById("tg-custom-cmd-input");
+    if (input) input.value = command;
+    const term = document.getElementById("tg-bot-terminal");
+    if (term) {
+      term.innerHTML = `<span style="color:#FBBF24;">> Ejecutando: ${escapeHtml(command)}...</span>\n` + term.innerHTML;
+    }
+    const res = await apiFetch("/api/telegram/simulate-command", {
+      method: "POST",
+      body: JSON.stringify({ command: command }),
+    });
+    if (term) {
+      term.innerHTML = `<span style="color:#4ADE80;">> ${escapeHtml(command)} [${new Date().toLocaleTimeString()}]:</span>\n` +
+        `<span style="color:#F8FAFC;">${escapeHtml(res.response)}</span>\n` +
+        `────────────────────────────────────────────────────────────\n` + term.innerHTML;
+    }
+    showToast(`Comando ${command} ejecutado`);
+    await loadTelemetry(true);
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+function handleCustomTgCmd(ev) {
+  ev.preventDefault();
+  const input = document.getElementById("tg-custom-cmd-input");
+  const cmd = input ? input.value.trim() : "";
+  if (!cmd) return;
+  runSimulatedTgCmd(cmd);
 }

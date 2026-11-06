@@ -28,7 +28,7 @@ class CentinelaDaemon:
         self.hostname = socket.gethostname()
         self.started_at = time.time()
         self.running = False
-        self.auto_dispatch_telegram = False  # Permite ver 'Pendiente' en la demo o activar despacho automático
+        self.auto_dispatch_telegram = True  # Permite ver 'Pendiente' en la demo o activar despacho automático
         self.cycles_completed = 0
         self.last_fim_check = None
         self.fim_summary = {"total": 0, "intact": 0, "alerts": 0}
@@ -169,7 +169,7 @@ class CentinelaDaemon:
                         url,
                         json={
                             "chat_id": settings.TELEGRAM_CHAT_ID,
-                            "text": f"🚨 {msg_text}\n\n📌 Host: {self.hostname}\n🛡️ Plataforma: CiberCentinela SOC",
+                            "text": f"[ALERTA CRITICA DE SEGURIDAD - CIBERCENTINELA]\n{msg_text}\n\nHost: {self.hostname}\nPlataforma: CiberCentinela SOC (UNACH)",
                         },
                         timeout=8,
                     )

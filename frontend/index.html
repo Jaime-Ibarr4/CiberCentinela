@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CiberCentinela | Daemon SOC &amp; Plataforma de Análisis Forense (localhost)</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=4.1" />
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
@@ -32,7 +35,7 @@
         <span class="pulse-dot"></span>
         <span id="top-pid-host">PID -- @ localhost:8090</span>
       </div>
-      <div class="status-pill" title="Motor de Base de Datos y Disparadores Forenses">
+      <div class="status-pill hide-md" title="Motor de Base de Datos y Disparadores Forenses">
         <span>MySQL 8.0 InnoDB · 7 Triggers Activos</span>
       </div>
       <div class="status-pill hidden" id="top-user-pill">
@@ -48,7 +51,7 @@
   <main id="view-login" class="login-screen">
     <div class="login-container">
       <!-- Formulario de Inicio de Sesión -->
-      <div class="panel-card" style="margin-bottom:0;">
+      <div class="panel-card">
         <div class="panel-header">
           <div class="panel-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -57,7 +60,7 @@
           <span class="badge badge-neutral">bcrypt cost=12</span>
         </div>
 
-        <p style="font-size:0.83rem; color:var(--fg-secondary); margin-bottom:1rem;">
+        <p class="panel-desc">
           Acceso restringido a personal activo (<code class="mono">activo = 1</code>) bajo dominio institucional <code class="mono">@centinela.local</code>. Protegido contra inyección SQL (Prepared Statements <code class="mono">?</code>) y bloqueo por fuerza bruta (5 intentos = 30 min lock; 10 intentos = baja lógica automática).
         </p>
 
@@ -74,7 +77,7 @@
           <!-- DESAFÍO ANTI-BOT / GOOGLE reCAPTCHA v2 -->
           <div class="form-group" style="margin-bottom:1rem;">
             <label style="display:block; margin-bottom:0.45rem;">
-              <span>🛡️ Verificación de Seguridad Anti-Bot:</span>
+              <span>Verificación de seguridad anti-bot</span>
             </label>
             <div style="display:flex; justify-content:center;">
               <div class="g-recaptcha" data-sitekey="6LfseAcuAAAAAEiL7seb1wxEyZ_52ZpdqXl8H327" data-theme="dark"></div>
@@ -84,7 +87,7 @@
           <!-- CÓDIGO 2FA (AUTHY) -->
           <div class="form-group">
             <label for="totp_code" style="display:flex; justify-content:space-between; align-items:center;">
-              <span>🔑 Token 2FA (Authy):</span>
+              <span>Token 2FA (Authy)</span>
               <span class="badge badge-neutral" style="font-size:0.7rem;">Código de 6 dígitos</span>
             </label>
             <input type="text" id="totp_code" class="input-control mono" placeholder="123456" maxlength="6" required />
@@ -103,52 +106,6 @@
         </form>
       </div>
 
-      <!-- Selector Rápido de Perfiles de Demostración (Datos Semilla del PDF) -->
-      <div class="panel-card" style="margin-bottom:0;">
-        <div class="panel-header">
-          <div class="panel-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Perfiles Operativos en <code class="mono">cibercentinela_db</code>
-          </div>
-          <span class="badge badge-baja">Click para Autocompletar</span>
-        </div>
-
-        <p style="font-size:0.8rem; color:var(--fg-muted); margin-bottom:0.8rem;">
-          Seleccione cualquiera de las cuentas oficiales del documento para cargar sus credenciales y conectar con su respectivo usuario nativo de MySQL 8.0:
-        </p>
-
-        <div class="profile-quick-card" onclick="fillDemoLogin('aibarra@centinela.local', 'Admin#Centinela2026!', true)">
-          <div>
-            <div style="font-weight:600; font-size:0.88rem;">1. Alexis Ibarra <span class="badge badge-ok">Administrador</span></div>
-            <div class="mono" style="font-size:0.74rem; color:var(--fg-muted);">aibarra@centinela.local · MySQL: usr_admin_ciber (rol_admin)</div>
-          </div>
-          <span class="btn btn-secondary btn-sm">Entrar</span>
-        </div>
-
-        <div class="profile-quick-card" onclick="fillDemoLogin('mcamacho@centinela.local', 'Forense$Marvin2026!', true)">
-          <div>
-            <div style="font-weight:600; font-size:0.88rem;">2. Marvin Camacho <span class="badge badge-baja">Analista Forense</span></div>
-            <div class="mono" style="font-size:0.74rem; color:var(--fg-muted);">mcamacho@centinela.local · MySQL: usr_analista_ciber (rol_analista)</div>
-          </div>
-          <span class="btn btn-secondary btn-sm">Entrar</span>
-        </div>
-
-        <div class="profile-quick-card" onclick="fillDemoLogin('dgomez@centinela.local', 'Reporta@Danna2026!', true)">
-          <div>
-            <div style="font-weight:600; font-size:0.88rem;">3. Danna Gomez <span class="badge badge-media">Reportador</span></div>
-            <div class="mono" style="font-size:0.74rem; color:var(--fg-muted);">dgomez@centinela.local · MySQL: usr_reportador_ciber (rol_reportador)</div>
-          </div>
-          <span class="btn btn-secondary btn-sm">Entrar</span>
-        </div>
-
-        <div class="profile-quick-card" style="border-color:rgba(220,38,38,0.4);" onclick="fillDemoLogin('iroblero@centinela.local', 'Inactivo%Ivan2026!', true)">
-          <div>
-            <div style="font-weight:600; font-size:0.88rem;">4. Ivan Roblero <span class="badge badge-critica">Inactivo (activo = 0)</span></div>
-            <div class="mono" style="font-size:0.74rem; color:var(--fg-muted);">iroblero@centinela.local · Prueba de rechazo inmediato (Política 1.1)</div>
-          </div>
-          <span class="btn btn-danger btn-sm">Probar Bloqueo</span>
-        </div>
-      </div>
     </div>
   </main>
 
@@ -193,7 +150,7 @@
         <button class="nav-btn" data-tab="tab-telegram" onclick="switchTab('tab-telegram')">
           <span class="nav-btn-left">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Alertas Críticas Telegram
+            Bot Telegram &amp; Alertas
           </span>
           <span class="nav-badge critical" id="badge-telegram-count">0</span>
         </button>
@@ -210,15 +167,15 @@
       <!-- Tarjeta de Cambio Rápido de Perfil para Demostración -->
       <div style="background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px; padding:0.75rem; font-size:0.75rem;">
         <div style="color:var(--fg-muted); font-weight:600; margin-bottom:0.4rem;">CAMBIO RÁPIDO DE ROL (DEMO):</div>
-        <div style="display:flex; flex-direction:column; gap:0.3rem;">
-          <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;" onclick="quickSwitchUser('aibarra@centinela.local', 'Admin#Centinela2026!')">
-            1. Admin (usr_admin_ciber)
+        <div style="display:flex; flex-direction:column; gap:0.35rem;">
+          <button class="role-switch-btn" onclick="quickSwitchUser('aibarra@centinela.local', 'Admin#Centinela2026!')">
+            <span style="color:#38BDF8; font-weight:700;">1.</span> Admin (usr_admin_ciber)
           </button>
-          <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;" onclick="quickSwitchUser('mcamacho@centinela.local', 'Forense$Marvin2026!')">
-            2. Analista (usr_analista_ciber)
+          <button class="role-switch-btn" onclick="quickSwitchUser('mcamacho@centinela.local', 'Forense$Marvin2026!')">
+            <span style="color:#FBBF24; font-weight:700;">2.</span> Analista (usr_analista_ciber)
           </button>
-          <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;" onclick="quickSwitchUser('dgomez@centinela.local', 'Reporta@Danna2026!')">
-            3. Reportador (usr_reportador_ciber)
+          <button class="role-switch-btn" onclick="quickSwitchUser('dgomez@centinela.local', 'Reporta@Danna2026!')">
+            <span style="color:#4ADE80; font-weight:700;">3.</span> Reportador (usr_reportador_ciber)
           </button>
         </div>
       </div>
@@ -231,6 +188,10 @@
       <!-- TAB 1: DEMONIO EN SEGUNDO PLANO Y TELEMETRÍA SOC -->
       <!-- ================================================================== -->
       <section id="tab-soc" class="tab-view">
+        <header class="page-header">
+          <h1 class="page-title">Panel de Monitoreo</h1>
+          <p class="page-subtitle">Telemetría del servidor, KPIs del sistema operativo y eventos del demonio centinelad.</p>
+        </header>
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-label">Tickets de Incidentes</div>
@@ -254,13 +215,93 @@
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1.35fr 1fr; gap:1.25rem;">
+        <!-- PANEL DE KPIS DE SISTEMAS OPERATIVOS (EVALUACIÓN ASO - LINUX SERVER METRICS) -->
+        <div class="panel-card panel-accent">
+          <div class="panel-header">
+            <div class="panel-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              KPIs del Sistema Operativo
+            </div>
+            <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+              <span class="badge badge-ok" id="system-os-badge">Linux Kernel / SO</span>
+              <div style="display:inline-flex; align-items:center; background:rgba(8, 13, 26, 0.9); border:1px solid var(--border-color); border-radius:8px; padding:2px 4px; gap:0.35rem;">
+                <input type="text" id="kpi-target-chat-id" class="input-control mono" placeholder="Chat ID / No. Destinatario" style="width:170px; padding:0.3rem 0.6rem; font-size:0.78rem; border:none; background:transparent; box-shadow:none;" title="Ingresa el Chat ID numérico de Telegram del usuario o canal" />
+                <button class="btn btn-primary btn-sm" onclick="sendTelegramKPIReportNow()" title="Transmitir reporte consolidado a este Chat ID" style="padding:0.32rem 0.75rem; font-size:0.78rem; display:inline-flex; align-items:center; gap:0.35rem;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  Enviar Reporte
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="kpi-grid kpi-grid-os">
+            <!-- KPI 1: CPU -->
+            <div class="kpi-card kpi-compact">
+              <div class="kpi-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+                KPI 1: Uso de CPU
+              </div>
+              <div class="kpi-value" id="kpi-cpu-val">0%</div>
+              <div class="kpi-sub">Carga (1/5/15m): <span id="kpi-cpu-load" class="mono">-</span></div>
+            </div>
+            <!-- KPI 2: RAM -->
+            <div class="kpi-card kpi-compact">
+              <div class="kpi-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M6 19v-3"/><path d="M10 19v-3"/><path d="M14 19v-3"/><path d="M18 19v-3"/><rect x="2" y="6" width="20" height="9" rx="1"/></svg>
+                KPI 2: Uso de RAM
+              </div>
+              <div class="kpi-value" id="kpi-ram-val">0%</div>
+              <div class="kpi-sub"><span id="kpi-ram-used" class="mono">-</span> libres de <span id="kpi-ram-total" class="mono">-</span></div>
+            </div>
+            <!-- KPI 3: Disco -->
+            <div class="kpi-card kpi-compact">
+              <div class="kpi-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                KPI 3: Espacio en Disco
+              </div>
+              <div class="kpi-value" id="kpi-disk-val">0%</div>
+              <div class="kpi-sub">Partición raíz: <span id="kpi-disk-sub" class="mono">-</span></div>
+            </div>
+            <!-- KPI 5: Uptime -->
+            <div class="kpi-card kpi-compact">
+              <div class="kpi-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                KPI 5: Uptime Servidor
+              </div>
+              <div class="kpi-value" id="kpi-uptime-val">0m</div>
+              <div class="kpi-sub">Boot: <span id="kpi-boot-time" class="mono">-</span></div>
+            </div>
+            <!-- KPI 6: Red -->
+            <div class="kpi-card kpi-compact">
+              <div class="kpi-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                KPI 6: Conexiones Red
+              </div>
+              <div class="kpi-value" id="kpi-net-val">0</div>
+              <div class="kpi-sub">ESTABLISHED: <span id="kpi-net-estab" class="mono">0</span> | LISTEN: <span id="kpi-net-listen" class="mono">0</span></div>
+            </div>
+          </div>
+          <!-- KPI 4: Servicios Críticos -->
+          <div style="background:rgba(15, 23, 42, 0.6); padding:0.65rem 1rem; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <div style="font-size:0.8rem; font-weight:600; color:var(--fg-secondary); display:flex; align-items:center; gap:0.4rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              KPI 4: Estado de Servicios Críticos:
+            </div>
+            <div id="services-badges-list" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <span class="badge badge-ok">MySQL: 3306</span>
+              <span class="badge badge-ok">centinelad: 8090</span>
+              <span class="badge badge-baja">SSH: 22</span>
+              <span class="badge badge-ok">Web: 80/443</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-split">
           <!-- Consola en Vivo del Servicio en Segundo Plano (journalctl style) -->
-          <div class="panel-card" style="margin-bottom:0;">
+          <div class="panel-card">
             <div class="panel-header">
               <div class="panel-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-                Consola en Segundo Plano: <code class="mono">journalctl -u centinelad.service -f</code>
+                Eventos del demonio <code class="mono">journalctl -u centinelad</code>
               </div>
               <button class="btn btn-secondary btn-sm" onclick="loadTelemetry()">Actualizar Telemetría</button>
             </div>
@@ -270,11 +311,11 @@
           </div>
 
           <!-- Estado de Disparadores Forenses y Motor MySQL 8.0 -->
-          <div class="panel-card" style="margin-bottom:0;">
+          <div class="panel-card">
             <div class="panel-header">
               <div class="panel-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Disparadores Activos en MySQL 8.0
+                Triggers activos en MySQL
               </div>
               <span class="badge badge-ok" id="mysql-version-badge">MySQL 8.0</span>
             </div>
@@ -298,25 +339,29 @@
       <!-- TAB 2: MÓDULO DE GESTIÓN DE INCIDENTES (CICLO DE VIDA COMPLETO) -->
       <!-- ================================================================== -->
       <section id="tab-incidents" class="tab-view hidden">
+        <header class="page-header">
+          <h1 class="page-title">Gestión de Incidentes</h1>
+          <p class="page-subtitle">Registro, triaje y seguimiento del ciclo de vida de los incidentes de seguridad.</p>
+        </header>
         <div class="panel-card">
           <div class="panel-header">
             <div class="panel-title">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Registro y Triaje de Incidentes de Seguridad (<code class="mono">Prepared Statements ?</code>)
+              Tickets de incidentes
             </div>
             <button class="btn btn-primary" onclick="openNewIncidentModal()">
-              + Registrar Nuevo Ticket de Incidente
+              + Nuevo ticket
             </button>
           </div>
 
           <!-- Filtros Parametrizados (Mitigación de SQL Injection - Sección 6.1) -->
           <div class="form-grid" style="margin-bottom:1rem;">
             <div>
-              <label style="font-size:0.75rem; color:var(--fg-muted);">Buscar por Ticket o Título</label>
+              <label class="field-label">Buscar por Ticket o Título</label>
               <input type="text" id="filter-search" class="input-control" style="width:100%;" placeholder="Ej. TCK-2026-002 o LockBit..." oninput="loadIncidents()" />
             </div>
             <div>
-              <label style="font-size:0.75rem; color:var(--fg-muted);">Severidad (<code class="mono">chk_incidente_severidad</code>)</label>
+              <label class="field-label">Severidad (<code class="mono">chk_incidente_severidad</code>)</label>
               <select id="filter-severidad" class="input-control" style="width:100%;" onchange="loadIncidents()">
                 <option value="">Todas las severidades</option>
                 <option value="Critica">Crítica (Alerta Telegram)</option>
@@ -326,13 +371,13 @@
               </select>
             </div>
             <div>
-              <label style="font-size:0.75rem; color:var(--fg-muted);">Categoría de Amenaza</label>
+              <label class="field-label">Categoría de Amenaza</label>
               <select id="filter-categoria" class="input-control" style="width:100%;" onchange="loadIncidents()">
                 <option value="">Todas las categorías</option>
               </select>
             </div>
             <div>
-              <label style="font-size:0.75rem; color:var(--fg-muted);">Estado del Ciclo de Vida</label>
+              <label class="field-label">Estado del Ciclo de Vida</label>
               <select id="filter-estado" class="input-control" style="width:100%;" onchange="loadIncidents()">
                 <option value="">Todos los estados</option>
               </select>
@@ -363,17 +408,21 @@
       <!-- TAB 3: MÓDULO FORENSE DIGITAL (EVIDENCIAS SHA-256 + ANALIZADOR DE CORREOS) -->
       <!-- ================================================================== -->
       <section id="tab-forensics" class="tab-view hidden">
-        <div style="display:grid; grid-template-columns: 1.1fr 1fr; gap:1.25rem; margin-bottom:1.25rem;">
+        <header class="page-header">
+          <h1 class="page-title">Forense Digital</h1>
+          <p class="page-subtitle">Resguardo de evidencias con firma SHA-256 y análisis forense de cabeceras de correo.</p>
+        </header>
+        <div class="grid-split">
           <!-- Subida y Sellado SHA-256 de Evidencia Forense -->
-          <div class="panel-card" style="margin-bottom:0;">
+          <div class="panel-card">
             <div class="panel-header">
               <div class="panel-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Resguardo de Evidencia Digital con Firma SHA-256
+                Resguardo de evidencia SHA-256
               </div>
               <span class="badge badge-ok">chk_evidencia_sha256 (64 chars)</span>
             </div>
-            <p style="font-size:0.8rem; color:var(--fg-secondary); margin-bottom:0.85rem;">
+            <p class="panel-desc">
               Aloja el artefacto en <code class="mono">/srv/forensics/cases/&lt;TICKET&gt;/</code>, registra su peso exacto en <code class="mono">tamano_bytes</code> y calcula su hash criptográfico SHA-256 para preservar la cadena de custodia legal (Política 1 y 2).
             </p>
             <form id="form-upload-evidence" onsubmit="handleUploadEvidence(event)">
@@ -392,11 +441,11 @@
           </div>
 
           <!-- Analizador Forense de Cabeceras de Correos Sospechosos (Phishing) -->
-          <div class="panel-card" style="margin-bottom:0;">
+          <div class="panel-card">
             <div class="panel-header">
               <div class="panel-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                Analizador Forense de Cabeceras de Correo (Phishing)
+                Analizador de cabeceras de correo
               </div>
               <div style="display:flex; gap:0.4rem;">
                 <button type="button" class="btn btn-secondary btn-sm" onclick="loadSamplePhishingHeaders('malicious')">
@@ -430,10 +479,10 @@
         <div class="panel-card">
           <div class="panel-header">
             <div class="panel-title">
-              Bóveda Inmutable de Evidencias Forenses (<code class="mono">evidencias_forenses</code>) y Verificador FIM SHA-256
+              Bóveda de evidencias <code class="mono">evidencias_forenses</code>
             </div>
             <button class="btn btn-secondary btn-sm" onclick="loadForensics()">
-              Re-verificar Firmas SHA-256 en Disco
+              Re-verificar firmas
             </button>
           </div>
           <div class="table-wrap">
@@ -458,43 +507,39 @@
       <!-- TAB 4: BITÁCORA INMUTABLE Y LABORATORIO DE PRUEBAS DE SEGURIDAD BD -->
       <!-- ================================================================== -->
       <section id="tab-audit" class="tab-view hidden">
+        <header class="page-header">
+          <h1 class="page-title">Bitácora y Pruebas de Base de Datos</h1>
+          <p class="page-subtitle">Laboratorio de políticas de MySQL 8.0 y registro de auditoría inmutable.</p>
+        </header>
         <!-- Laboratorio Interactivo de las 4 Pruebas de Seguridad del Documento de BD -->
         <div class="panel-card">
           <div class="panel-header">
             <div class="panel-title">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Laboratorio de Comprobación de Políticas y Triggers en Vivo (Secciones 4 y 7 del Reporte)
+              Laboratorio de políticas y triggers
             </div>
             <span class="badge badge-media">Ejecución Real contra MySQL 8.0</span>
           </div>
-          <p style="font-size:0.82rem; color:var(--fg-secondary); margin-bottom:1rem;">
+          <p class="panel-desc">
             Ejecute en tiempo real las 4 pruebas periciales documentadas en el diseño de base de datos para demostrar cómo MySQL 8.0 bloquea accesos no autorizados, valores fuera de rango, alteración de bitácora y asignación de analistas inactivos:
           </p>
 
-          <div class="form-grid" style="margin-bottom:1rem;">
-            <button class="btn btn-secondary" style="justify-content:flex-start; text-align:left; padding:0.75rem;" onclick="runSecurityLabTest('test_1_least_privilege')">
-              <div>
-                <div style="color:#38BDF8; font-weight:700;">Prueba 1: Menor Privilegio</div>
-                <div style="font-size:0.74rem; color:var(--fg-muted);">DELETE con <code class="mono">usr_reportador_ciber</code> (Error 1142)</div>
-              </div>
+          <div class="form-grid" style="margin-bottom:1.15rem;">
+            <button class="lab-test-btn" onclick="runSecurityLabTest('test_1_least_privilege')">
+              <div style="color:#38BDF8; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Prueba 1: Menor Privilegio</div>
+              <div style="font-size:0.75rem; color:var(--fg-muted);">DELETE con <code class="mono" style="color:#38BDF8;">usr_reportador_ciber</code> (Error 1142)</div>
             </button>
-            <button class="btn btn-secondary" style="justify-content:flex-start; text-align:left; padding:0.75rem;" onclick="runSecurityLabTest('test_2_check_constraint')">
-              <div>
-                <div style="color:#FBBF24; font-weight:700;">Prueba 2: Validación CHECK</div>
-                <div style="font-size:0.74rem; color:var(--fg-muted);">Severidad <code class="mono">'SuperUrgente'</code> (Error 3819)</div>
-              </div>
+            <button class="lab-test-btn" onclick="runSecurityLabTest('test_2_check_constraint')">
+              <div style="color:#FBBF24; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Prueba 2: Validación CHECK</div>
+              <div style="font-size:0.75rem; color:var(--fg-muted);">Severidad <code class="mono" style="color:#FBBF24;">'SuperUrgente'</code> (Error 3819)</div>
             </button>
-            <button class="btn btn-secondary" style="justify-content:flex-start; text-align:left; padding:0.75rem;" onclick="runSecurityLabTest('test_3_immutable_audit')">
-              <div>
-                <div style="color:#F87171; font-weight:700;">Prueba 3: Bitácora Inmutable</div>
-                <div style="font-size:0.74rem; color:var(--fg-muted);">UPDATE <code class="mono">bitacora_auditoria</code> (SQLSTATE 45000)</div>
-              </div>
+            <button class="lab-test-btn" onclick="runSecurityLabTest('test_3_immutable_audit')">
+              <div style="color:#F87171; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Prueba 3: Bitácora Inmutable</div>
+              <div style="font-size:0.75rem; color:var(--fg-muted);">UPDATE <code class="mono" style="color:#F87171;">bitacora_auditoria</code> (SQLSTATE 45000)</div>
             </button>
-            <button class="btn btn-secondary" style="justify-content:flex-start; text-align:left; padding:0.75rem;" onclick="runSecurityLabTest('test_4_inactive_analyst')">
-              <div>
-                <div style="color:#4ADE80; font-weight:700;">Prueba 4: Analista Inactivo</div>
-                <div style="font-size:0.74rem; color:var(--fg-muted);">Asignar a Ivan Roblero <code class="mono">activo=0</code> (SQLSTATE 45000)</div>
-              </div>
+            <button class="lab-test-btn" onclick="runSecurityLabTest('test_4_inactive_analyst')">
+              <div style="color:#4ADE80; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Prueba 4: Analista Inactivo</div>
+              <div style="font-size:0.75rem; color:var(--fg-muted);">Asignar a Ivan Roblero <code class="mono" style="color:#4ADE80;">activo=0</code> (SQLSTATE 45000)</div>
             </button>
           </div>
 
@@ -505,7 +550,7 @@
         <div class="panel-card">
           <div class="panel-header">
             <div class="panel-title">
-              Bitácora Transaccional Inmutable (<code class="mono">bitacora_auditoria</code> · JSON Antes / Después)
+              Bitácora inmutable <code class="mono">bitacora_auditoria</code>
             </div>
             <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">Actualizar Bitácora</button>
           </div>
@@ -533,17 +578,82 @@
       <!-- TAB 5: MÓDULO DE ALERTAS CRÍTICAS Y COLA DE TELEGRAM -->
       <!-- ================================================================== -->
       <section id="tab-telegram" class="tab-view hidden">
-        <div style="display:grid; grid-template-columns: 1.35fr 1fr; gap:1.25rem;">
+        <header class="page-header">
+          <h1 class="page-title">Bot de Telegram y Alertas</h1>
+          <p class="page-subtitle">Configuración del bot, consola de comandos y cola de alertas críticas.</p>
+        </header>
+        <div class="grid-split grid-split-telegram">
+          <!-- Configuración del Bot de Telegram y Consola de Despacho -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">Configuración del Bot</div>
+              <span class="badge badge-baja" id="telegram-mode-badge">Modo Sandbox Local</span>
+            </div>
+            <form onsubmit="saveTelegramConfig(event)">
+              <div class="form-group">
+                <label>Telegram Bot Token (API HTTP/TLS)</label>
+                <input type="password" id="tg-bot-token" class="input-control mono" placeholder="Ej. 7123456789:AAH..." />
+              </div>
+              <div class="form-group">
+                <label>Telegram Chat ID / Número de Usuario (Destinatario del Reporte)</label>
+                <input type="text" id="tg-chat-id" class="input-control mono" placeholder="Ej. 123456789 o -100192837465" />
+                <span style="font-size:0.72rem; color:var(--fg-muted);">Tu Chat ID numérico único. Puedes obtenerlo en Telegram escribiendo a @userinfobot o @myidbot.</span>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="tg-sim-mode" checked />
+                <label for="tg-sim-mode">Pasarela Sandbox Local (No requiere internet para demostración)</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="tg-auto-dispatch" />
+                <label for="tg-auto-dispatch">Auto-despachar en segundo plano cada 15s</label>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%;">Guardar configuración</button>
+            </form>
+          </div>
+          <!-- CONSOLA INTERACTIVA DE COMANDOS DEL BOT DE TELEGRAM (EVALUACIÓN ASO) -->
+          <div class="panel-card panel-accent">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                Consola de Comandos del Bot
+              </div>
+              <span class="badge badge-ok">Comandos Dinámicos Habilitados</span>
+            </div>
+            <p class="panel-desc">
+              Cumple con el rubro <strong>"Diseño e implementación del bot de Telegram (API, comandos, seguridad)"</strong>. Permite interactuar con el bot directamente desde la consola web o enviando comandos desde la app móvil oficial de Telegram.
+            </p>
+            <div class="cmd-grid">
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/kpis')">/kpis (Reporte General)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/cpu')">/cpu (Carga)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/ram')">/ram (Memoria)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/disco')">/disco (Particiones)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/servicios')">/servicios (Servicios SO)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/uptime')">/uptime (Actividad)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/conexiones')">/conexiones (Sockets)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/incidentes')">/incidentes (SOC Forense)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/backup')">/backup (Hot Dump)</button>
+              <button class="btn btn-secondary btn-sm" onclick="runSimulatedTgCmd('/status')">/status (Diagnóstico)</button>
+            </div>
+            <form onsubmit="handleCustomTgCmd(event)" class="inline-form">
+              <input type="text" id="tg-custom-cmd-input" class="input-control mono" placeholder="Escriba un comando (ej. /kpis, /cpu, /help)..." style="flex:1;" />
+              <button type="submit" class="btn btn-primary btn-sm">Ejecutar Comando</button>
+            </form>
+            <div class="terminal-box" id="tg-bot-terminal" style="min-height:220px; max-height:420px; white-space:pre-wrap;">
+              Esperando ejecución de comandos... (Haga clic en cualquiera de los botones de comando arriba o escriba uno)
+            </div>
+          </div>
+        </div>
+
           <div class="panel-card">
             <div class="panel-header">
               <div class="panel-title">
-                Cola de Eventos Críticos (<code class="mono">notificaciones_telegram</code>)
+                Cola de Alertas Críticas <code class="mono">notificaciones_telegram</code>
               </div>
               <button class="btn btn-primary btn-sm" onclick="dispatchTelegramQueue()">
                 Despachar Alertas Pendientes Ahora
               </button>
             </div>
-            <p style="font-size:0.8rem; color:var(--fg-secondary); margin-bottom:0.85rem;">
+            <p class="panel-desc">
               Alimentada automáticamente por los disparadores <code class="mono">trg_incidentes_after_insert</code> y <code class="mono">trg_incidentes_after_update</code> únicamente cuando un incidente tiene o escala a severidad <strong>Crítica</strong> (Política 1.4 Uso de Recursos).
             </p>
             <div class="table-wrap">
@@ -562,52 +672,28 @@
               </table>
             </div>
           </div>
-
-          <!-- Configuración del Bot de Telegram y Consola de Despacho -->
-          <div class="panel-card">
-            <div class="panel-header">
-              <div class="panel-title">Configuración del Demonio Bot de Telegram</div>
-              <span class="badge badge-baja" id="telegram-mode-badge">Modo Sandbox Local</span>
-            </div>
-            <form onsubmit="saveTelegramConfig(event)">
-              <div class="form-group">
-                <label>Telegram Bot Token (API HTTP/TLS)</label>
-                <input type="password" id="tg-bot-token" class="input-control mono" placeholder="Ej. 7123456789:AAH..." />
-              </div>
-              <div class="form-group">
-                <label>Telegram Chat ID (Canal / Grupo SOC)</label>
-                <input type="text" id="tg-chat-id" class="input-control mono" placeholder="Ej. -100192837465" />
-              </div>
-              <div class="form-group" style="flex-direction:row; align-items:center; gap:0.5rem;">
-                <input type="checkbox" id="tg-sim-mode" checked />
-                <label for="tg-sim-mode" style="margin:0; cursor:pointer;">Pasarela Sandbox Local (No requiere internet para demostración)</label>
-              </div>
-              <div class="form-group" style="flex-direction:row; align-items:center; gap:0.5rem;">
-                <input type="checkbox" id="tg-auto-dispatch" />
-                <label for="tg-auto-dispatch" style="margin:0; cursor:pointer;">Auto-despachar en segundo plano cada 15s</label>
-              </div>
-              <button type="submit" class="btn btn-secondary btn-sm">Guardar Configuración del Bot</button>
-            </form>
-          </div>
-        </div>
-      </section>
+</section>
 
       <!-- ================================================================== -->
       <!-- TAB 6: ADMINISTRACIÓN DEL SERVIDOR, USUARIOS Y RESPALDOS MYSQLDUMP -->
       <!-- ================================================================== -->
       <section id="tab-admin" class="tab-view hidden">
+        <header class="page-header">
+          <h1 class="page-title">Administración del Servidor</h1>
+          <p class="page-subtitle">Respaldos en caliente, control de personal y política de contraseñas.</p>
+        </header>
         <!-- Panel de Copias de Seguridad en Caliente (mysqldump --single-transaction) -->
         <div class="panel-card">
           <div class="panel-header">
             <div class="panel-title">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Módulo de Copias de Seguridad en Caliente (<code class="mono">mysqldump --single-transaction + gzip</code>)
+              Respaldos en caliente <code class="mono">mysqldump + gzip</code>
             </div>
             <button class="btn btn-primary" onclick="triggerHotBackup()">
-              Generar Respaldo en Caliente (.sql.gz) Ahora
+              Generar respaldo ahora
             </button>
           </div>
-          <p style="font-size:0.81rem; color:var(--fg-secondary); margin-bottom:0.85rem;">
+          <p class="panel-desc">
             Ejecuta <code class="mono">mysqldump --single-transaction --quick --routines --triggers --events cibercentinela_db | gzip</code> en <code class="mono">/var/backups/mysql_cibercentinela/</code> con política de rotación automática de 7 días (<code class="mono">RETENTION_DAYS=7</code>, Política 7).
           </p>
           <div class="table-wrap">
@@ -628,10 +714,10 @@
         </div>
 
         <!-- Gestión de Cuentas de Usuario y Validador de Política de Contraseñas -->
-        <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:1.25rem;">
+        <div class="grid-split grid-split-wide">
           <div class="panel-card">
             <div class="panel-header">
-              <div class="panel-title">Control de Personal y Baja Lógica (<code class="mono">activo = 1 / 0</code>)</div>
+              <div class="panel-title">Control de personal</div>
               <span class="badge badge-neutral">Política 2.7: Prohibido borrado físico</span>
             </div>
             <div class="table-wrap">
@@ -653,7 +739,7 @@
 
           <div class="panel-card">
             <div class="panel-header">
-              <div class="panel-title">Alta de Personal / Validador Política 3</div>
+              <div class="panel-title">Alta de personal</div>
               <span class="badge badge-ok">Mín. 12 caracteres</span>
             </div>
             <form id="form-create-user" onsubmit="handleCreateUser(event)">
@@ -755,6 +841,6 @@
 
   <div id="toast-container"></div>
 
-  <script src="/static/app.js?v=3.0"></script>
+  <script src="/static/app.js?v=4.1"></script>
 </body>
 </html>

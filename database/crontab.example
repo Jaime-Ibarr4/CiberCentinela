@@ -1,0 +1,22 @@
+# ============================================================================
+# CIBERCENTINELA - TABLA DE TAREAS PROGRAMADAS EN LINUX (CRONTAB / CRON.D)
+# Asignatura: Administración de Sistemas Operativos
+# Catedrático: Dr. Carlos Alberto García Ramos
+# ============================================================================
+# Para instalar en Ubuntu Server:
+# crontab -e  (o copiar a /etc/cron.d/cibercentinela)
+# ============================================================================
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# 1. Monitoreo y Transmisión Automatizada de KPIs a Telegram (Cada 4 horas)
+#    Recopila CPU, RAM, Disco, Servicios, Uptime, Red y Métricas SOC
+0 */4 * * * /opt/cibercentinela/database/kpi_report_cron.sh >> /var/log/centinela_kpis.log 2>&1
+
+# 2. Respaldo Lógico en Caliente Automatizado (mysqldump consistente + gzip + rotación 7 días)
+#    Se ejecuta todos los días a las 02:00 AM (Política 7 y Sección 6.2)
+0 2 * * * /opt/cibercentinela/database/backup_rotation.sh >> /var/log/centinela_backups.log 2>&1
+
+# 3. Reporte Matutino Diario Consolidado a las 08:00 AM
+0 8 * * * /opt/cibercentinela/database/kpi_report_cron.sh >> /var/log/centinela_kpis.log 2>&1
