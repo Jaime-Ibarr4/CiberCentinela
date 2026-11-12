@@ -5,6 +5,7 @@
 let currentCaptchaId = null;
 let currentCaptchaAnswer = null;
 let AUTH_TOKEN = localStorage.getItem("centinela_token") || "";
+let CSRF_TOKEN = localStorage.getItem("centinela_csrf") || "";
 let CURRENT_USER = null;
 let CATALOGS = { categorias: [], estados: [], analistas: [], roles: [] };
 let POLL_TIMER = null;
@@ -33,6 +34,9 @@ async function apiFetch(path, options = {}) {
   const headers = options.headers || {};
   if (AUTH_TOKEN) {
     headers["Authorization"] = `Bearer ${AUTH_TOKEN}`;
+  }
+  if (CSRF_TOKEN && options.method && ["POST", "PUT", "PATCH", "DELETE"].includes(options.method.toUpperCase())) {
+    headers["X-CSRF-Token"] = CSRF_TOKEN;
   }
   if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
@@ -218,6 +222,10 @@ async function handleLogin(ev) {
     });
     AUTH_TOKEN = res.token;
     localStorage.setItem("centinela_token", AUTH_TOKEN);
+    if (res.csrf_token) {
+      CSRF_TOKEN = res.csrf_token;
+      localStorage.setItem("centinela_csrf", CSRF_TOKEN);
+    }
     CURRENT_USER = res.user;
     showToast(`Sesión iniciada como ${CURRENT_USER.nombre_completo} [${CURRENT_USER.nombre_rol}] (${CURRENT_USER.mysql_service_user})`);
     await enterConsole();
@@ -267,6 +275,10 @@ async function quickSwitchUser(email, password) {
     });
     AUTH_TOKEN = res.token;
     localStorage.setItem("centinela_token", AUTH_TOKEN);
+    if (res.csrf_token) {
+      CSRF_TOKEN = res.csrf_token;
+      localStorage.setItem("centinela_csrf", CSRF_TOKEN);
+    }
     CURRENT_USER = res.user;
     updateTopUserBar();
     showToast(`Cambiado a perfil: ${CURRENT_USER.nombre_completo} (${CURRENT_USER.mysql_service_user})`);
@@ -279,8 +291,10 @@ async function quickSwitchUser(email, password) {
 
 function logoutSession() {
   AUTH_TOKEN = "";
+  CSRF_TOKEN = "";
   CURRENT_USER = null;
   localStorage.removeItem("centinela_token");
+  localStorage.removeItem("centinela_csrf");
   if (POLL_TIMER) clearInterval(POLL_TIMER);
   document.getElementById("view-app").classList.add("hidden");
   document.getElementById("view-login").classList.remove("hidden");

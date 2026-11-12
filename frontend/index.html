@@ -543,6 +543,26 @@
             </button>
           </div>
 
+          <h4 style="font-size:0.92rem; font-weight:700; color:#38BDF8; margin: 1rem 0 0.5rem 0;">Pruebas de Validación de Erradicación de Amenazas (Causa Raíz)</h4>
+          <div class="form-grid" style="margin-bottom:1.15rem;">
+            <button class="lab-test-btn" onclick="runSecurityLabTest('test_sqli_eradication')">
+              <div style="color:#38BDF8; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Erradicación 1: Prepared Statements</div>
+              <div style="font-size:0.75rem; color:var(--fg-muted);">Inyección SQL <code class="mono" style="color:#38BDF8;">' OR '1'='1</code> neutralizada</div>
+            </button>
+            <button class="lab-test-btn" onclick="runSecurityLabTest('test_csrf_eradication')">
+              <div style="color:#FBBF24; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Erradicación 2: Validación Token CSRF</div>
+              <div style="font-size:0.75rem; color:var(--fg-muted);">Firma HMAC-SHA256 y bloqueo <code class="mono" style="color:#FBBF24;">HTTP 403</code></div>
+            </button>
+            <button class="lab-test-btn" onclick="runSecurityLabTest('test_backend_input_validation')">
+              <div style="color:#A78BFA; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Erradicación 3: Sanitización Backend</div>
+              <div style="font-size:0.75rem; color:var(--fg-muted);">Eliminación de <code class="mono" style="color:#A78BFA;">&lt;script&gt;</code> y XSS</div>
+            </button>
+            <button class="lab-test-btn" onclick="runSecurityLabTest('test_session_revocation')">
+              <div style="color:#F43F5E; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Erradicación 4: Revocación de Sesiones</div>
+              <div style="font-size:0.75rem; color:var(--fg-muted);">Invalidación inmediata tras cambio de clave</div>
+            </button>
+          </div>
+
           <div id="security-lab-output" class="terminal-box hidden"></div>
         </div>
 

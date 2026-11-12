@@ -17,6 +17,11 @@ from backend.db import query_prepared, execute_prepared
 FAILED_LOGIN_TRACKER: Dict[str, Dict[str, Any]] = {}
 PASSWORD_HISTORY_STORE: Dict[int, List[str]] = {}
 
+# Control de versiones de sesión para invalidación instantánea de credenciales comprometidas
+USER_SESSION_VERSION: Dict[int, int] = {}
+REVOKED_TOKENS_STORE: set = set()
+SUSPICIOUS_SESSIONS_LOG: List[Dict[str, Any]] = []
+
 
 def hash_password_bcrypt(plain_password: str) -> str:
     """
@@ -205,13 +210,17 @@ def reset_failed_login(email: str):
         del FAILED_LOGIN_TRACKER[key]
 
 
-def create_session_token(user_data: Dict[str, Any]) -> str:
+def create_session_token(user_data: Dict[str, Any], client_ip: str = "127.0.0.1") -> str:
+    user_id = user_data["id_usuario"]
+    current_version = USER_SESSION_VERSION.get(user_id, 1)
     payload = {
-        "id_usuario": user_data["id_usuario"],
+        "id_usuario": user_id,
         "nombre_completo": user_data["nombre_completo"],
         "email": user_data["email"],
         "id_rol": user_data["id_rol"],
         "nombre_rol": user_data["nombre_rol"],
+        "session_version": current_version,
+        "session_ip": client_ip,
         "exp": int(time.time()) + 86400,
     }
     raw_json = json.dumps(payload, separators=(",", ":")).encode("utf-8")
@@ -227,6 +236,8 @@ def create_session_token(user_data: Dict[str, Any]) -> str:
 def verify_session_token(token: str) -> Optional[Dict[str, Any]]:
     if not token or "." not in token:
         return None
+    if token in REVOKED_TOKENS_STORE:
+        return None
     try:
         b64_payload, sig = token.split(".", 1)
         expected_sig = hmac.new(
@@ -239,9 +250,109 @@ def verify_session_token(token: str) -> Optional[Dict[str, Any]]:
         payload = json.loads(base64.urlsafe_b64decode(b64_payload.encode("utf-8")).decode("utf-8"))
         if payload.get("exp", 0) < time.time():
             return None
+            
+        # Comprobar invalidación de credenciales comprometidas (versión de sesión)
+        user_id = payload.get("id_usuario")
+        active_version = USER_SESSION_VERSION.get(user_id, 1)
+        if payload.get("session_version", 1) != active_version:
+            return None  # Sesión cerrada automáticamente tras restablecimiento de credenciales
+            
         return payload
     except Exception:
         return None
+
+
+def revoke_all_user_sessions(id_usuario: int) -> int:
+    """
+    Erradicación de amenazas: Invalida inmediatamente todas las sesiones activas
+    de un usuario incrementando su versión de sesión.
+    """
+    new_version = USER_SESSION_VERSION.get(id_usuario, 1) + 1
+    USER_SESSION_VERSION[id_usuario] = new_version
+    return new_version
+
+
+def generate_csrf_token(id_usuario: int, session_salt: str = "") -> str:
+    """
+    Genera un token de protección contra ataques CSRF (Cross-Site Request Forgery)
+    firmado criptográficamente con HMAC-SHA256, con timestamp de caducidad.
+    """
+    ts = int(time.time())
+    entropy = hashlib.sha256(f"{id_usuario}:{ts}:{session_salt}:{settings.SESSION_SECRET_KEY}".encode()).hexdigest()[:16]
+    data = f"{id_usuario}:{ts}:{entropy}"
+    sig = hmac.new(
+        settings.SESSION_SECRET_KEY.encode("utf-8"),
+        data.encode("utf-8"),
+        hashlib.sha256
+    ).hexdigest()
+    return f"{data}.{sig}"
+
+
+def verify_csrf_token(csrf_token: str, id_usuario: int, max_age_seconds: int = 14400) -> bool:
+    """
+    Valida la autenticidad y vigencia de un token CSRF (máximo 4 horas por defecto).
+    """
+    if not csrf_token or "." not in csrf_token:
+        return False
+    try:
+        data, sig = csrf_token.split(".", 1)
+        expected_sig = hmac.new(
+            settings.SESSION_SECRET_KEY.encode("utf-8"),
+            data.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+        if not hmac.compare_digest(sig, expected_sig):
+            return False
+        parts = data.split(":")
+        if len(parts) != 3:
+            return False
+        token_uid, timestamp, _ = parts
+        if int(token_uid) != id_usuario:
+            return False
+        if time.time() - int(timestamp) > max_age_seconds:
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def sanitize_backend_input(val: str, max_length: int = 1000) -> str:
+    """
+    Validación y desinfección estricta de entradas en el servidor.
+    Elimina etiquetas ejecutables (scripts, iframes, payloads XSS) y caracteres nulos.
+    """
+    if not val or not isinstance(val, str):
+        return ""
+    # Remover bloques de scripts maliciosos y eventos on*
+    cleaned = re.sub(r"(?i)<script.*?>.*?</script.*?>", "", val, flags=re.DOTALL)
+    cleaned = re.sub(r"(?i)<iframe.*?>.*?</iframe.*?>", "", cleaned, flags=re.DOTALL)
+    cleaned = re.sub(r"(?i)on\w+\s*=", "blocked_event=", cleaned)
+    cleaned = re.sub(r"(?i)javascript:", "blocked_scheme:", cleaned)
+    cleaned = cleaned.replace("\x00", "")
+    return cleaned[:max_length].strip()
+
+
+def detect_suspicious_behavior(user: Dict[str, Any], client_ip: str) -> Tuple[bool, Optional[str]]:
+    """
+    Detecta comportamientos inusuales en sesiones activas (secuestro de sesión por IP divergente).
+    """
+    session_ip = user.get("session_ip", "")
+    user_id = user.get("id_usuario", 0)
+    
+    # Si la sesión proviene de una IP distinta a la inicial y no es localhost de pruebas
+    if session_ip and session_ip != client_ip and client_ip not in ("127.0.0.1", "localhost", "::1"):
+        revoke_all_user_sessions(user_id)
+        log_entry = {
+            "id_usuario": user_id,
+            "email": user.get("email"),
+            "ip_original": session_ip,
+            "ip_sospechosa": client_ip,
+            "timestamp": time.time(),
+            "accion": "INVALIDACION_AUTOMATICA_SESION",
+        }
+        SUSPICIOUS_SESSIONS_LOG.append(log_entry)
+        return True, f"ACTIVIDAD SOSPECHOSA DETECTADA: Divergencia de dirección IP ({session_ip} vs {client_ip}). La sesión ha sido revocada automáticamente."
+    return False, None
 
 def check_password_expiration(fecha_ultimo_cambio: Optional[Any], max_days: int = 90) -> Tuple[bool, int]:
     """
